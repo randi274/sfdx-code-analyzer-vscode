@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Code Analyzer Issues Repository
+    url: https://github.com/forcedotcom/code-analyzer/issues
+    about: Please create your issues in our main repository.
