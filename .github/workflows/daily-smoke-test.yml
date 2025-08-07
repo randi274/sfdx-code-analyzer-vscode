@@ -9,6 +9,12 @@ on:
   #   - cron: "30 17 * * 1-5"
 
 jobs:
+  # Test failure job to verify retry mechanism
+  fail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Intentionally fail for testing
+        run: false
   # Step 1: Build the tarballs so they can be installed locally.
   build-code-analyzer-tarball:
     name: "Build code analyzer tarball"
@@ -44,37 +50,37 @@ jobs:
     uses: ./.github/workflows/create-vsix-artifact.yml
     secrets: inherit
   # Step 5: Report any problems
-  report-problems:
-    name: "Report problems"
-    runs-on: ubuntu-latest
-    needs: [build-code-analyzer-tarball, smoke-test, create-vsix-artifact]
-    if: ${{ failure() || cancelled() }}
-    steps:
-      - name: Report problems
-        shell: bash
-        env:
-          RUN_LINK: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          ALERT_SEV="info"
-          ALERT_SUMMARY="Daily smoke test failed 3x on ${{ runner.os }}"
+  # report-problems:
+  #   name: "Report problems"
+  #   runs-on: ubuntu-latest
+  #   needs: [build-code-analyzer-tarball, smoke-test, create-vsix-artifact]
+  #   if: ${{ failure() || cancelled() }}
+  #   steps:
+  #     - name: Report problems
+  #       shell: bash
+  #       env:
+  #         RUN_LINK: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  #       run: |
+  #         ALERT_SEV="info"
+  #         ALERT_SUMMARY="Daily smoke test failed 3x on ${{ runner.os }}"
 
-          generate_post_data() {
-            cat <<EOF
-            {
-              "payload": {
-                "summary": "${ALERT_SUMMARY}",
-                "source": "Github Actions",
-                "severity": "${ALERT_SEV}"
-              },
-              "links": [{
-                "href": "${{ env.RUN_LINK }}",
-                "text": "Link to action execution"
-              }],
-              "event_action": "trigger",
-              "dedup_key": "GH-HB-${{ matrix.os.vm }}-${{ matrix.node }}",
-              "routing_key": "${{ secrets.PAGERDUTY_HEARTBEAT_KEY }}"
-            }
-          EOF
-          }
+  #         generate_post_data() {
+  #           cat <<EOF
+  #           {
+  #             "payload": {
+  #               "summary": "${ALERT_SUMMARY}",
+  #               "source": "Github Actions",
+  #               "severity": "${ALERT_SEV}"
+  #             },
+  #             "links": [{
+  #               "href": "${{ env.RUN_LINK }}",
+  #               "text": "Link to action execution"
+  #             }],
+  #             "event_action": "trigger",
+  #             "dedup_key": "GH-HB-${{ matrix.os.vm }}-${{ matrix.node }}",
+  #             "routing_key": "${{ secrets.PAGERDUTY_HEARTBEAT_KEY }}"
+  #           }
+  #         EOF
+  #         }
 
-          curl --request POST --data "$(generate_post_data)" https://events.pagerduty.com/v2/enqueue
+  #         curl --request POST --data "$(generate_post_data)" https://events.pagerduty.com/v2/enqueue
