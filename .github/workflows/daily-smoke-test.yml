@@ -1,37 +1,37 @@
 name: daily-smoke-test
 on:
   workflow_dispatch: # As per documentation, the colon is needed even though no config is required.
-  schedule:
-    # Cron syntax is "minute[0-59] hour[0-23] date[1-31] month[1-12] day[0-6]". '*' is 'any value', and multiple values
-    # can be specified with comma-separated lists. All times are UTC.
-    # So this expression means "run at 17:30 UTC every day". This time was chosen because it corresponds to
-    # 9:30AM PST, meaning that any issues will be surfaced on working days when people are likely to be awake and online.
-    - cron: "30 17 * * 1-5"
+  # schedule:
+  #   # Cron syntax is "minute[0-59] hour[0-23] date[1-31] month[1-12] day[0-6]". '*' is 'any value', and multiple values
+  #   # can be specified with comma-separated lists. All times are UTC.
+  #   # So this expression means "run at 17:30 UTC every day". This time was chosen because it corresponds to
+  #   # 9:30AM PST, meaning that any issues will be surfaced on working days when people are likely to be awake and online.
+  #   - cron: "30 17 * * 1-5"
 
 jobs:
   # Step 1: Build the tarballs so they can be installed locally.
   build-code-analyzer-tarball:
-    name: 'Build code analyzer tarball'
+    name: "Build code analyzer tarball"
     uses: ./.github/workflows/build-tarball.yml
     with:
-      target-branch: 'dev'
+      target-branch: "dev"
   # Step 2: Actually run the tests.
   smoke-test:
-    name: 'Run smoke tests'
+    name: "Run smoke tests"
     needs: [build-code-analyzer-tarball]
     uses: ./.github/workflows/run-tests.yml
     with:
       use-tarballs: true
-      tarball-suffix: 'dev'
+      tarball-suffix: "dev"
     secrets: inherit
   # Step 3: Build a VSIX artifact for use if needed.
   create-vsix-artifact:
-    name: 'Upload VSIX as artifact'
+    name: "Upload VSIX as artifact"
     uses: ./.github/workflows/create-vsix-artifact.yml
     secrets: inherit
   # Step 4: Report any problems
   report-problems:
-    name: 'Report problems'
+    name: "Report problems"
     runs-on: ubuntu-latest
     needs: [build-code-analyzer-tarball, smoke-test, create-vsix-artifact]
     if: ${{ failure() || cancelled() }}
