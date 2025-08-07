@@ -115,9 +115,14 @@ jobs:
       - name: Intentionally fail for testing
         run: false
 
-      # 4 Retry on failure (typically install timeout)
-      - name: Retry on failure
-        if: failure() && fromJSON(github.run_attempt) < 3
+  # Retry on failure (runs after all matrix jobs complete)
+  retry-on-failure:
+    name: "Retry on failure"
+    runs-on: ubuntu-latest
+    needs: [production-heartbeat]
+    if: failure() && fromJSON(github.run_attempt) < 3
+    steps:
+      - name: Trigger retry workflow
         env:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
@@ -125,19 +130,22 @@ jobs:
         run: |
           gh workflow run retry.yml -F github_run_id=${{ github.run_id }}
 
-      # === Report any problems ===
+  # Report problems (runs after retry mechanism is complete)
+  report-problems:
+    name: "Report problems"
+    runs-on: ubuntu-latest
+    needs: [production-heartbeat, retry-on-failure]
+    if: ${{ failure() && fromJSON(github.run_attempt) == 3 }}
+    steps:
+      - name: echo "Report problems"
+        run: |
+          echo "Problem time"
       # - name: Report problems
-      #   # There are problems if any step failed or was skipped.
-      #   # Note that the `join()` call omits null values, so if any steps were skipped, they won't have a corresponding
-      #   # value in the string.
-      #   if: ${{ failure() || cancelled() }}
       #   shell: bash
       #   env:
       #     # A link to this run, so the PagerDuty assignee can quickly get here.
       #     RUN_LINK: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
       #   run: |
-
       #     ALERT_SEV="info"
       #     ALERT_SUMMARY="Production heartbeat script failed on ${{ runner.os }}"
       #     # Define a helper function to create our POST request's data, to sidestep issues with nested quotations.
