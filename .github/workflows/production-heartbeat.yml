@@ -91,7 +91,7 @@ jobs:
           fi
         shell: bash
 
-      # 3 Install VS Code and Extension on macOS
+      # 3 Install and Verify VS Code and Extension on macOS
       - name: Install VS Code on macOS
         if: runner.os == 'macOS'
         run: |
@@ -110,6 +110,16 @@ jobs:
           else
             echo "::error Extension installation failed" && exit 1
           fi
+
+      # 4 Retry on failure (typically install timeout)
+      - name: Retry on failure
+        if: failure() && fromJSON(github.run_attempt) < 3
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          GH_DEBUG: api
+        run: |
+          gh workflow run retry.yml -F github_run_id=${{ github.run_id }}
 
       # === Report any problems ===
       - name: Report problems
