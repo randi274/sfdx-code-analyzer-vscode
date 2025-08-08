@@ -134,8 +134,8 @@ jobs:
   report-problems:
     name: Report problems
     runs-on: ubuntu-latest
-    needs: [production-heartbeat]
-    if: ${{ failure() && fromJSON(github.run_attempt) == 3 }}
+    needs: [production-heartbeat, retry-on-failure]
+    if: failure() && fromJSON(github.run_attempt) >= 3
     steps:
       - name: Report problems
         run: |
