@@ -13,12 +13,9 @@ jobs:
   build-code-analyzer-tarball:
     name: Build code analyzer tarball
     runs-on: ubuntu-latest
-    # uses: ./.github/workflows/build-tarball.yml
-    # with:
-    #   target-branch: "dev"
-    steps:
-      - name: Intentionally fail for testing
-        run: false
+    uses: ./.github/workflows/build-tarball.yml
+    with:
+      target-branch: "dev"
   # Step 2: Actually run the tests.
   smoke-test:
     name: Run smoke tests
