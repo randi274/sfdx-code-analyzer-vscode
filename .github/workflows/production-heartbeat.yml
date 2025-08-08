@@ -11,7 +11,7 @@ on:
 jobs:
   production-heartbeat:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os:
           [{ vm: ubuntu-latest }, { vm: windows-latest }, { vm: macos-latest }]
@@ -20,6 +20,10 @@ jobs:
     timeout-minutes: 60
     steps:
       # 1 Install VS Code and Extension on Ubuntu
+      - name: Intentionally fail for testing
+        if: fromJSON(github.run_attempt) == 1
+        run: false
+
       - name: Install VS Code on Ubuntu
         if: runner.os == 'Linux'
         run: |
