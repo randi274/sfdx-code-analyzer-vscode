@@ -12,7 +12,6 @@ jobs:
   # Step 1: Build the tarballs so they can be installed locally.
   build-code-analyzer-tarball:
     name: Build code analyzer tarball
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/build-tarball.yml
     with:
       target-branch: "dev"
