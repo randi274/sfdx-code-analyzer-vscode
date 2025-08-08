@@ -19,10 +19,6 @@ jobs:
     runs-on: ${{ matrix.os.vm }}
     timeout-minutes: 60
     steps:
-      # Test failure step to verify retry mechanism
-      - name: Intentionally fail for testing
-        run: false
-
       # 1 Install VS Code and Extension on Ubuntu
       - name: Install VS Code on Ubuntu
         if: runner.os == 'Linux'
