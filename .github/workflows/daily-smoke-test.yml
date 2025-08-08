@@ -12,9 +12,14 @@ jobs:
   # Step 1: Build the tarballs so they can be installed locally.
   build-code-analyzer-tarball:
     name: Build code analyzer tarball
-    uses: ./.github/workflows/build-tarball.yml
-    with:
-      target-branch: "dev"
+    if: ${{ fromJSON(github.run_attempt) == 1 }}
+    runs-on: ubuntu-latest
+    # uses: ./.github/workflows/build-tarball.yml
+    # with:
+    #   target-branch: "dev"
+    steps:
+      - name: Intentionally fail for testing
+        run: false
   # Step 2: Actually run the tests.
   smoke-test:
     name: Run smoke tests
